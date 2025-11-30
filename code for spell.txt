@@ -1,0 +1,193 @@
+import React, { useState } from 'react';
+
+const WORDS = [
+  "absence", "acorn", "action", "address", "advise", "allergy", "almost", "alphabet", "although", "amazing", "ambition",
+  "ample", "amusement", "ancient", "another", "apple", "appreciate", "argue", "arrow", "artist", "awful", "backpack",
+  "beehive", "bowl", "brag", "brake", "bread", "brief", "broad", "brook", "bump", "butcher", "canteen", "canyon",
+  "capability", "capital", "castle", "caterpillar", "cave", "cellar", "chameleon", "charity", "charming", "chatty",
+  "cheesecake", "cheetah", "chest", "chew", "chop", "cinema", "citizen", "classmate", "clip", "clog", "compete",
+  "congratulate", "cook", "cost", "court", "coward", "cucumber", "currant", "cutlery", "dairy", "deny", "describe",
+  "difficulty", "digital", "disco", "discourage", "diverse", "dolphin", "dreamer", "dump", "durable", "earring", "ease",
+  "elbow", "embrace", "emotion", "empty", "energy", "equal", "evident", "expensive", "fiber", "fibre", "final", "firefighter",
+  "flame", "flow", "foam", "forehead", "fort", "frog", "furnace", "furniture", "furry", "goddess", "golden eagle", "guard",
+  "guitar", "gulf", "hallway", "healthy", "height", "history", "hole", "hunger", "image", "immense", "imperfect", "impossible",
+  "infect", "inform", "inhale", "iron", "journey", "jungle", "kayak", "knowledge", "ladybug", "lane", "lecture", "leek",
+  "line", "linen", "lipstick", "loan", "lobster", "lollipop", "lonely", "loudspeaker", "love", "loyalty", "lullaby", "lyrics",
+  "mammoth", "mandatory", "marble", "march", "marina", "mascot", "match", "measure", "mediocre", "melt", "merit", "metal",
+  "meteor", "mist", "moment", "moody", "mountain", "mustache", "moustache", "mumble", "mushroom", "nasty", "nosy", "onion",
+  "option", "pancake", "peanut", "pine", "pink", "plate", "pocket", "poisonous", "polite", "police", "pomegranate", "pour",
+  "power", "promise", "quarter", "quickly", "radish", "rainbow", "raisin", "reliable", "religion", "rice", "river", "roar",
+  "rubber", "safety", "salt", "same", "sample", "sausage", "seal", "service", "shame", "shoulder", "shred", "siege", "sight",
+  "skate", "skip", "snack", "soccer", "solid", "sometimes", "soup", "special", "spill", "spread", "stair", "stomach",
+  "straight", "strawberry", "sugar", "sunflower", "sure", "swamp", "sweater", "swine", "system", "tackle", "talent", "talk",
+  "tape", "temperature", "theory", "tough", "towel", "tower", "traditional", "tulip", "unclear", "unity", "unusual", "urge",
+  "urgent", "vegetable", "vinegar", "violin", "voice", "watermelon", "weather", "weekly", "winter", "wonderful", "wood", "wrap",
+  "wring", "yesterday"
+];
+
+// --- Flashcards Mode ---
+const Flashcards = ({ words }) => {
+  const [index, setIndex] = useState(0);
+  const next = () => setIndex(i => (i + 1) % words.length);
+  const prev = () => setIndex(i => (i === 0 ? words.length - 1 : i - 1));
+  return (
+    <div>
+      <h2>Flashcards</h2>
+      <div style={{ fontSize: 32, margin: "20px 0" }}>{words[index]}</div>
+      <button onClick={prev}>Previous</button>
+      <button onClick={next} style={{ marginLeft: 10 }}>Next</button>
+      <div style={{ marginTop: 20 }}>Word {index + 1} of {words.length}</div>
+    </div>
+  );
+};
+
+// --- Quiz Mode ---
+const Quiz = ({ words }) => {
+  const [index, setIndex] = useState(0);
+  const [input, setInput] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const checkAnswer = () => {
+    if (input.trim().toLowerCase() === words[index].toLowerCase()) {
+      setFeedback("Correct!");
+    } else {
+      setFeedback("Try again!");
+    }
+  };
+  const next = () => {
+    setIndex((i) => (i + 1) % words.length);
+    setInput('');
+    setFeedback('');
+  };
+  return (
+    <div>
+      <h2>Quiz</h2>
+      <p>Spell this word:</p>
+      <b>{words[index].split('').map(() => "_ ").join('')}</b>
+      <div>
+        <input value={input} onChange={e => setInput(e.target.value)} />
+        <button onClick={checkAnswer} style={{ marginLeft: 10 }}>Check</button>
+      </div>
+      <div style={{ color: 'green', marginTop: 10 }}>{feedback}</div>
+      <button onClick={next} style={{ marginTop: 20 }}>Next Word</button>
+    </div>
+  );
+};
+
+// --- Test Mode ---
+const Test = ({ words }) => {
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState(Array(words.length).fill(''));
+  const [finished, setFinished] = useState(false);
+
+  const handleChange = (e) => {
+    const newAnswers = [...answers];
+    newAnswers[current] = e.target.value;
+    setAnswers(newAnswers);
+  };
+  const next = () => setCurrent(c => Math.min(c + 1, words.length - 1));
+  const prev = () => setCurrent(c => Math.max(c - 1, 0));
+  const finish = () => setFinished(true);
+
+  const score = answers.filter((ans, i) => ans.trim().toLowerCase() === words[i].toLowerCase()).length;
+
+  return (
+    <div>
+      <h2>Test Mode</h2>
+      {finished ? (
+        <div>
+          <h3>Your score: {score} / {words.length}</h3>
+          <button onClick={() => { setFinished(false); setCurrent(0); setAnswers(Array(words.length).fill('')); }}>Retake</button>
+        </div>
+      ) : (
+        <>
+          <p>Word {current + 1} of {words.length}</p>
+          <b>{words[current].split('').map(() => "_ ").join('')}</b>
+          <div>
+            <input value={answers[current]} onChange={handleChange} />
+          </div>
+          <button onClick={prev} disabled={current === 0} style={{ marginTop: 10 }}>Previous</button>
+          <button onClick={next} disabled={current === words.length - 1} style={{ marginLeft: 10 }}>Next</button>
+          <button onClick={finish} style={{ marginLeft: 10 }}>Finish Test</button>
+        </>
+      )}
+    </div>
+  );
+};
+
+// --- Hangman Mode ---
+const randomWord = (words) => words[Math.floor(Math.random() * words.length)];
+const Hangman = ({ words }) => {
+  const [word, setWord] = useState(randomWord(words).toLowerCase());
+  const [guesses, setGuesses] = useState([]);
+  const [misses, setMisses] = useState([]);
+  const [input, setInput] = useState('');
+  const maxMisses = 6;
+
+  const letters = word.split('').map(l => (guesses.includes(l) ? l : "_")).join(' ');
+  const won = letters.replace(/ /g, '') === word;
+  const lost = misses.length >= maxMisses;
+
+  const guess = () => {
+    const l = input.toLowerCase();
+    setInput('');
+    if (!l || l.length !== 1 || guesses.includes(l) || misses.includes(l)) return;
+    if (word.includes(l)) {
+      setGuesses([...guesses, l]);
+    } else {
+      setMisses([...misses, l]);
+    }
+  };
+
+  const restart = () => {
+    setWord(randomWord(words).toLowerCase());
+    setGuesses([]);
+    setMisses([]);
+    setInput('');
+  };
+
+  return (
+    <div>
+      <h2>Hangman</h2>
+      <div style={{ fontSize: 32, letterSpacing: 4 }}>{letters}</div>
+      <p>Misses: {misses.join(', ')} ({misses.length}/{maxMisses})</p>
+      {won && <div style={{ color: 'green' }}>You won! The word was "{word}" <button onClick={restart}>Play Again</button></div>}
+      {lost && <div style={{ color: 'red' }}>You lost! The word was "{word}" <button onClick={restart}>Try Again</button></div>}
+      {!won && !lost && (
+        <>
+          <input value={input} onChange={e => setInput(e.target.value)} maxLength={1}/>
+          <button onClick={guess} style={{ marginLeft: 10 }}>Guess</button>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default function App() {
+  const [mode, setMode] = useState("Flashcards");
+  return (
+    <div style={{ padding: 20, fontFamily: 'sans-serif', maxWidth: 600, margin: 'auto' }}>
+      <h1>Spelling Bee Trainer</h1>
+      <nav style={{ marginBottom: 20 }}>
+        {["Flashcards", "Quiz", "Test", "Hangman"].map(m => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            style={{
+              marginRight: 10,
+              fontWeight: mode === m ? "bold" : "normal",
+              background: mode === m ? "#d3e9ff" : undefined,
+              borderRadius: 5,
+              padding: "5px 12px"
+            }}>
+            {m}
+          </button>
+        ))}
+      </nav>
+      <hr />
+      {mode === "Flashcards" && <Flashcards words={WORDS} />}
+      {mode === "Quiz" && <Quiz words={WORDS} />}
+      {mode === "Test" && <Test words={WORDS} />}
+      {mode === "Hangman" && <Hangman words={WORDS} />}
+    </div>
+  );
+}
